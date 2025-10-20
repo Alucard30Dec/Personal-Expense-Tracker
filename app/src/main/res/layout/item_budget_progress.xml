@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_marginBottom="8dp"
+    android:background="@android:color/white">
+
+    <TextView
+        android:id="@+id/categoryNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hạng mục"
+        android:textSize="16sp"
+        android:textStyle="bold"/>
+
+    <ProgressBar
+        android:id="@+id/budgetProgressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:progress="50"
+        android:layout_marginTop="8dp"/>
+
+    <TextView
+        android:id="@+id/progressTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Đã chi: 500.000 / 1.000.000 đ (50%)"
+        android:gravity="end"
+        android:layout_marginTop="4dp"/>
+
+</LinearLayout>

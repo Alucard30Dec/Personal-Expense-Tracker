@@ -1,0 +1,12 @@
+<resources>
+    <!-- các màu bạn đang dùng -->
+    <color name="bg">#F8FAFC</color>
+    <color name="md_sys_color_outline">#73777F</color>
+    <color name="md_sys_color_on_surface">#1B1B1F</color>
+    <color name="brand_primary">#2563EB</color>
+    <color name="brand_on_primary">#FFFFFF</color>
+
+    <!-- bổ sung để khỏi lỗi -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+</resources>
