@@ -1,106 +1,115 @@
 package com.example.quanlychitieu;
 
-import static com.example.quanlychitieu.R.*;
-
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager; // Hoặc androidx.preference.PreferenceManager
 import android.text.TextUtils;
-import android.view.inputmethod.EditorInfo;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
-// AndroidX Preference (khuyên dùng, thay cho android.preference.PreferenceManager)
-import androidx.preference.PreferenceManager;
-
-// Material
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
+// --- Import cho Google Sign-In ---
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import android.app.Activity;
+// (Import TextInputEditText nếu bạn dùng)
+// import com.google.android.material.textfield.TextInputEditText;
 
 public class LoginActivity extends AppCompatActivity {
 
-    // View (hỗ trợ cả TextInputEditText và EditText thường)
-    private TextInputEditText usernameEditText, passwordEditText;
-    private MaterialButton loginButton;
-    // Nút/Link Đăng ký: hỗ trợ cả id mới (registerTextButton) và id cũ (registerTextView)
-    private MaterialButton registerTextButton;
-    private android.widget.TextView registerTextView; // fallback
-
+    private EditText usernameEditText, passwordEditText;
+    private Button loginButton;
+    private TextView registerTextView;
     private SharedPreferences prefs;
 
-    // Keys
+    // --- Biến cho Google Sign-In ---
+    private SignInButton googleSignInButton;
+    private GoogleSignInClient mGoogleSignInClient;
+    private ActivityResultLauncher<Intent> googleSignInLauncher;
+    private static final String TAG = "LoginActivity";
+
+    // --- Key SharedPreferences (Cho 1 tài khoản duy nhất) ---
     private static final String PREF_USERNAME = "pref_username";
-    private static final String PREF_PASSWORD = "pref_password";     // *Chỉ demo*
-    private static final String PREF_LOGGED_IN = "pref_logged_in";   // trạng thái login
+    private static final String PREF_PASSWORD = "pref_password"; // !! CẢNH BÁO BẢO MẬT !!
+    private static final String PREF_LOGGED_IN = "pref_logged_in";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 1) Prefs
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // 2) Nếu đã đăng nhập -> vào thẳng Main
+        // Kiểm tra đăng nhập trước khi set layout
         if (prefs.getBoolean(PREF_LOGGED_IN, false)) {
             goToMainActivity();
             return;
         }
 
-        // 3) Hiển thị layout
-        // Đổi đúng tên file layout bạn đang dùng (activity_login2 hoặc activity_login)
-        setContentView(R.layout.activity_login2);
+        setContentView(R.layout.activity_login2); // Đảm bảo dùng đúng file layout
 
-        // 4) Ánh xạ View (ưu tiên TextInputEditText; nếu bạn dùng EditText thường, cast vẫn OK)
+        // --- Cấu hình Google Sign-In ---
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        // --- Đăng ký ActivityResultLauncher ---
+        googleSignInLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                        handleSignInResult(task);
+                    } else {
+                        Log.w(TAG, "Google Sign In bị hủy hoặc thất bại, resultCode: " + result.getResultCode());
+                        Toast.makeText(this, "Đăng nhập Google thất bại.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        // --- Ánh xạ View ---
         usernameEditText = findViewById(R.id.usernameEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
-        loginButton      = findViewById(R.id.loginButton);
+        loginButton = findViewById(R.id.loginButton);
+        registerTextView = findViewById(R.id.registerTextView);
+        googleSignInButton = findViewById(R.id.googleSignInButton);
 
-        // Đăng ký: id mới (MaterialButton)
-        registerTextButton = findViewById(R.id.registerTextButton);
-
-
-        // 5) Sự kiện
-        if (loginButton != null) {
-            loginButton.setOnClickListener(v -> attemptLogin());
-        }
-
-        if (registerTextButton != null) {
-            registerTextButton.setOnClickListener(v -> openRegister());
-        } else if (registerTextView != null) {
-            registerTextView.setOnClickListener(v -> openRegister());
-        }
-
-        // Cho phép bấm "Done" trên bàn phím để đăng nhập
-        if (passwordEditText != null) {
-            passwordEditText.setOnEditorActionListener((v, actionId, event) -> {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
-            });
-        }
+        // --- Cài đặt Listeners ---
+        loginButton.setOnClickListener(v -> attemptLogin());
+        registerTextView.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        });
+        googleSignInButton.setOnClickListener(v -> signInWithGoogle());
     }
 
+    /**
+     * Xử lý đăng nhập bằng tài khoản thường (SharedPreferences)
+     */
     private void attemptLogin() {
-        String username = safeText(usernameEditText);
-        String password = safeText(passwordEditText);
+        String username = usernameEditText.getText().toString().trim();
+        String password = passwordEditText.getText().toString();
 
         if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
             Toast.makeText(this, "Vui lòng nhập tên đăng nhập và mật khẩu", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Lấy thông tin đã đăng ký (đang lưu bằng SharedPreferences đơn giản để demo)
+        // --- LẤY DỮ LIỆU TỪ SharedPreferences ---
         String savedUsername = prefs.getString(PREF_USERNAME, null);
-        String savedPassword = prefs.getString(PREF_PASSWORD, null);
+        String savedPassword = prefs.getString(PREF_PASSWORD, null); // !! CẢNH BÁO BẢO MẬT !!
 
-        if (savedUsername == null || savedPassword == null) {
-            Toast.makeText(this, "Chưa có tài khoản. Vui lòng đăng ký trước.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+        // --- KIỂM TRA ĐĂNG NHẬP ---
         if (username.equals(savedUsername) && password.equals(savedPassword)) {
             // Đăng nhập thành công
             prefs.edit().putBoolean(PREF_LOGGED_IN, true).apply();
@@ -110,22 +119,44 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private void openRegister() {
-        startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+    /**
+     * Khởi chạy Intent Đăng nhập Google
+     */
+    private void signInWithGoogle() {
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        googleSignInLauncher.launch(signInIntent);
     }
 
+    /**
+     * Xử lý kết quả trả về từ Google
+     */
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            Log.d(TAG, "Đăng nhập Google thành công: " + account.getEmail());
+
+            // Đăng nhập Google thành công, coi như đã đăng nhập vào app
+            // (Bỏ qua bước kiểm tra/tạo user trong Room)
+            prefs.edit().putBoolean(PREF_LOGGED_IN, true).apply();
+
+            // (Tùy chọn) Lưu email của Google làm username để hiển thị
+            // prefs.edit().putString(PREF_USERNAME, account.getEmail()).apply();
+
+            goToMainActivity();
+
+        } catch (ApiException e) {
+            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+            Toast.makeText(this, "Đăng nhập Google thất bại. Mã lỗi: " + e.getStatusCode(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Chuyển đến màn hình chính
+     */
     private void goToMainActivity() {
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                | Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-        finish(); // đóng LoginActivity
-    }
-
-    // Helper: lấy chuỗi an toàn từ TextInputEditText
-    private String safeText(TextInputEditText editText) {
-        if (editText == null || editText.getText() == null) return "";
-        return editText.getText().toString().trim();
+        finish();
     }
 }

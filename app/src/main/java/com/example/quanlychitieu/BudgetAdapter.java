@@ -5,23 +5,25 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
+import android.widget.ImageView; // Import
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.textfield.TextInputEditText; // Import
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects; // Import Objects for null check
 
 public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetViewHolder> {
 
-    private List<String> categories; // Danh sách các hạng mục chi tiêu
-    private Map<String, Double> budgetMap; // Lưu trữ ngân sách hiện tại
+    private List<String> categories;
+    private Map<String, Double> budgetMap;
 
-    // Constructor nhận danh sách hạng mục và map ngân sách
     public BudgetAdapter(List<String> categories, Map<String, Double> budgetMap) {
         this.categories = categories;
-        this.budgetMap = budgetMap != null ? budgetMap : new HashMap<>();
+        // Đảm bảo budgetMap không bao giờ null
+        this.budgetMap = (budgetMap != null) ? new HashMap<>(budgetMap) : new HashMap<>();
     }
 
     @NonNull
@@ -35,13 +37,15 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
     public void onBindViewHolder(@NonNull BudgetViewHolder holder, int position) {
         String category = categories.get(position);
         holder.categoryNameTextView.setText(category);
+        holder.categoryIconImageView.setImageResource(getIconForCategory(category));
 
         // Hiển thị ngân sách hiện tại nếu có
         Double currentBudget = budgetMap.get(category);
         if (currentBudget != null && currentBudget > 0) {
+            // Sử dụng Objects.requireNonNull để tránh cảnh báo NPE tiềm ẩn
             holder.budgetAmountEditText.setText(String.valueOf(currentBudget.longValue()));
         } else {
-            holder.budgetAmountEditText.setText(""); // Để trống nếu chưa set
+            holder.budgetAmountEditText.setText("");
         }
     }
 
@@ -50,36 +54,50 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
         return categories.size();
     }
 
-    // Lấy Map chứa các giá trị ngân sách người dùng đã nhập/sửa
     public Map<String, Double> getBudgetData() {
         return budgetMap;
     }
 
+    // ✅ Hàm lấy icon
+    private int getIconForCategory(String category) {
+        if (category == null) return R.drawable.ic_expense;
+        switch (category) {
+            case "Ăn uống": return R.drawable.ic_eating;
+            case "Mua sắm": return R.drawable.ic_shopping;
+            case "Di chuyển": return R.drawable.ic_transport;
+            case "Hóa đơn": return R.drawable.ic_bill;
+            case "Giải trí": return R.drawable.ic_entertainment;
+            case "Sức khỏe": return R.drawable.ic_health;
+            case "Khác": return R.drawable.ic_question_mark;
+            default: return R.drawable.ic_expense;
+        }
+    }
+
+    // ✅ Cập nhật ViewHolder
     public class BudgetViewHolder extends RecyclerView.ViewHolder {
+        ImageView categoryIconImageView;
         TextView categoryNameTextView;
-        EditText budgetAmountEditText;
+        TextInputEditText budgetAmountEditText; // Đổi kiểu thành TextInputEditText
 
         public BudgetViewHolder(@NonNull View itemView) {
             super(itemView);
+            categoryIconImageView = itemView.findViewById(R.id.categoryIconImageView);
             categoryNameTextView = itemView.findViewById(R.id.categoryNameTextView);
-            budgetAmountEditText = itemView.findViewById(R.id.budgetAmountEditText);
+            budgetAmountEditText = itemView.findViewById(R.id.budgetAmountEditText); // ID của TextInputEditText bên trong
 
-            // Lắng nghe sự thay đổi trong EditText để cập nhật budgetMap
+            // TextWatcher giữ nguyên logic, chỉ cần đảm bảo nó áp dụng cho TextInputEditText
             budgetAmountEditText.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {}
-                @Override
-                public void afterTextChanged(Editable s) {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                @Override public void afterTextChanged(Editable s) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
                         String category = categories.get(position);
                         try {
-                            double amount = Double.parseDouble(s.toString());
+                            // Sử dụng Objects.requireNonNull để tránh cảnh báo
+                            double amount = Double.parseDouble(Objects.requireNonNull(s).toString());
                             budgetMap.put(category, amount);
-                        } catch (NumberFormatException e) {
-                            // Nếu người dùng xóa hết số thì coi như budget = 0
+                        } catch (NumberFormatException | NullPointerException e) {
                             budgetMap.put(category, 0.0);
                         }
                     }

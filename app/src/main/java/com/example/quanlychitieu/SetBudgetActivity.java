@@ -40,7 +40,7 @@ public class SetBudgetActivity extends AppCompatActivity {
         budgetDao = AppDatabase.getDatabase(this).budgetDao();
 
         // Lấy danh sách hạng mục chi tiêu (tạm thời lấy cứng)
-        expenseCategories = Arrays.asList("Ăn uống", "Mua sắm", "Di chuyển", "Hóa đơn", "Giải trí", "Sức khỏe");
+        expenseCategories = Arrays.asList("Ăn uống", "Mua sắm", "Di chuyển", "Hóa đơn", "Giải trí", "Sức khỏe", "Khác");
 
         // Lấy tháng năm hiện tại (VD: "2025-10")
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM", Locale.getDefault());

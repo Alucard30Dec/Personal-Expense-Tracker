@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/debtTypeIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:src="@drawable/ic_debt_loan"
+            android:scaleType="fitCenter" android:contentDescription="Icon loại vay nợ"/> <TextView
+        android:id="@+id/debtDescriptionTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/debtTypeIcon"
+        app:layout_constraintEnd_toStartOf="@+id/editDebtButton"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Vay tiền đi học thêm"/>
+
+        <TextView
+            android:id="@+id/debtAmountTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="?attr/textAppearanceBody1"
+            app:layout_constraintStart_toStartOf="@id/debtDescriptionTextView"
+            app:layout_constraintEnd_toEndOf="@id/debtDescriptionTextView"
+            app:layout_constraintTop_toBottomOf="@id/debtDescriptionTextView"
+            tools:text="Số tiền: + 56.000 đ"/>
+
+        <TextView
+            android:id="@+id/dueDateTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="?android:attr/textColorSecondary"
+            app:layout_constraintStart_toStartOf="@id/debtDescriptionTextView"
+            app:layout_constraintEnd_toEndOf="@id/debtDescriptionTextView"
+            app:layout_constraintTop_toBottomOf="@id/debtAmountTextView"
+            tools:text="Hạn trả: 20/10/2025"/>
+
+        <ImageButton
+            android:id="@+id/editDebtButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_edit"
+            android:scaleType="fitCenter" android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Sửa khoản vay/nợ"
+            app:layout_constraintEnd_toStartOf="@+id/deleteDebtButton"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/statusCheckBox"/> <ImageButton
+        android:id="@+id/deleteDebtButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_delete"
+        android:scaleType="fitCenter" android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Xóa khoản vay/nợ"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/statusCheckBox"/> <CheckBox
+        android:id="@+id/statusCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Đã thu"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="@id/debtDescriptionTextView"
+        app:layout_constraintTop_toBottomOf="@id/dueDateTextView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:buttonTint="?attr/colorPrimary" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,30 +1,38 @@
 package com.example.quanlychitieu;
 
+import android.content.Context; // Import Context
 import android.graphics.Color;
-import android.graphics.PorterDuff;
+// import android.graphics.PorterDuff; // No longer needed for LinearProgressIndicator tint
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
+import android.widget.ImageView; // Import ImageView
+// import android.widget.ProgressBar; // Replace with LinearProgressIndicator
+import com.google.android.material.progressindicator.LinearProgressIndicator; // Import Material Progress
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat; // Import ContextCompat
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
+import java.util.Locale;
 
 public class BudgetProgressAdapter extends RecyclerView.Adapter<BudgetProgressAdapter.BudgetProgressViewHolder> {
 
     private List<BudgetProgress> budgetProgressList;
     private OnCategoryClickListener listener;
-    // ✅ Interface for click events
+    private Context context; // Store context for colors
+
     public interface OnCategoryClickListener {
         void onCategoryClick(int position);
     }
 
-    // ✅ Method to set the listener from the Activity
     public void setOnCategoryClickListener(OnCategoryClickListener listener) {
         this.listener = listener;
     }
-    public BudgetProgressAdapter(List<BudgetProgress> budgetProgressList) {
+
+    // Modified constructor to get context
+    public BudgetProgressAdapter(Context context, List<BudgetProgress> budgetProgressList) {
+        this.context = context;
         this.budgetProgressList = budgetProgressList;
     }
 
@@ -40,45 +48,45 @@ public class BudgetProgressAdapter extends RecyclerView.Adapter<BudgetProgressAd
         BudgetProgress item = budgetProgressList.get(position);
 
         holder.categoryNameTextView.setText(item.getCategoryName());
+        holder.categoryIconImageView.setImageResource(getIconForCategory(item.getCategoryName()));
 
-        if (item.getBudgetAmount() > 0) {
-            double spentAmount = item.getSpentAmount();
-            double budgetAmount = item.getBudgetAmount();
+        double spentAmount = item.getSpentAmount();
+        double budgetAmount = item.getBudgetAmount();
+
+        holder.spentTextView.setText(String.format(Locale.getDefault(), "Đã chi: %,.0f đ", spentAmount));
+
+        if (budgetAmount > 0) {
+            holder.budgetTextView.setText(String.format(Locale.getDefault(), "Ngân sách: %,.0f đ", budgetAmount));
             int progress = (int) ((spentAmount / budgetAmount) * 100);
+            holder.budgetProgressBar.setProgressCompat(Math.min(progress, 100), true); // Animate progress
 
-            holder.budgetProgressBar.setProgress(Math.min(progress, 100)); // Không vượt quá 100
-
-            // ✅ KIỂM TRA VƯỢT NGÂN SÁCH
+            // Set status text and progress bar color based on spending
             if (spentAmount > budgetAmount) {
-                // Vượt ngân sách
-                holder.progressTextView.setText(String.format(
-                        "⚠️ Đã chi: %,.0f / %,.0f đ (Vượt %,.0f đ)", // Thêm icon ⚠️ và thông báo vượt
-                        spentAmount,
-                        budgetAmount,
-                        spentAmount - budgetAmount // Số tiền vượt
-));
-                holder.progressTextView.setTextColor(Color.RED); // Đổi màu chữ thành đỏ
-                holder.budgetProgressBar.getProgressDrawable().setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN); // Đổi màu progress bar thành đỏ
+                double overspent = spentAmount - budgetAmount;
+                holder.statusTextView.setText(String.format(Locale.getDefault(), "⚠️ Vượt %,.0f đ", overspent));
+                holder.statusTextView.setTextColor(ContextCompat.getColor(context, R.color.error_dark)); // Use defined error color
+                holder.budgetProgressBar.setIndicatorColor(ContextCompat.getColor(context, R.color.error_dark));
             } else {
-                // Chưa vượt ngân sách
-                holder.progressTextView.setText(String.format("Đã chi: %,.0f / %,.0f đ (%d%%)", spentAmount, budgetAmount, progress));
-                holder.progressTextView.setTextColor(Color.DKGRAY); // Màu chữ bình thường (hoặc màu mặc định)
+                double remaining = budgetAmount - spentAmount;
+                holder.statusTextView.setText(String.format(Locale.getDefault(), "Còn lại: %,.0f đ (%d%%)", remaining, 100 - progress));
+                holder.statusTextView.setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray)); // Use a less prominent color
 
-                // Đổi màu thanh progress nếu gần đạt
-                if (progress >= 80) {
-                    holder.budgetProgressBar.getProgressDrawable().setColorFilter(Color.parseColor("#FFA500"), PorterDuff.Mode.SRC_IN); // Màu cam
-                } else {
-                    // Reset về màu mặc định
-                    holder.budgetProgressBar.getProgressDrawable().clearColorFilter();
+                // Set progress bar color based on percentage
+                if (progress >= 90) { // Nearing limit
+                    holder.budgetProgressBar.setIndicatorColor(Color.parseColor("#FFA500")); // Orange
+                } else { // Normal spending
+                    holder.budgetProgressBar.setIndicatorColor(ContextCompat.getColor(context, R.color.my_green_primary)); // Use your primary color
                 }
             }
+            holder.budgetTextView.setVisibility(View.VISIBLE); // Show budget text
+            holder.budgetProgressBar.setVisibility(View.VISIBLE); // Show progress bar
 
         } else {
-            // Không có ngân sách
-            holder.budgetProgressBar.setProgress(0);
-            holder.progressTextView.setText("Chưa đặt ngân sách");
-            holder.progressTextView.setTextColor(Color.GRAY); // Màu chữ khác
-            holder.budgetProgressBar.getProgressDrawable().clearColorFilter();
+            // No budget set
+            holder.budgetTextView.setVisibility(View.GONE); // Hide budget text
+            holder.budgetProgressBar.setVisibility(View.INVISIBLE); // Hide progress bar (INVISIBLE keeps space)
+            holder.statusTextView.setText("Chưa đặt ngân sách");
+            holder.statusTextView.setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray));
         }
     }
 
@@ -87,17 +95,37 @@ public class BudgetProgressAdapter extends RecyclerView.Adapter<BudgetProgressAd
         return budgetProgressList.size();
     }
 
+    // ✅ Hàm lấy icon (Copy từ TransactionAdapter và chỉnh sửa nếu cần)
+    private int getIconForCategory(String category) {
+        if (category == null) return R.drawable.ic_expense;
+        switch (category) {
+            case "Ăn uống": return R.drawable.ic_eating;
+            case "Mua sắm": return R.drawable.ic_shopping;
+            case "Di chuyển": return R.drawable.ic_transport;
+            case "Hóa đơn": return R.drawable.ic_bill;
+            case "Giải trí": return R.drawable.ic_entertainment;
+            case "Sức khỏe": return R.drawable.ic_health;
+            case "Khác": return R.drawable.ic_question_mark;
+            default: return R.drawable.ic_expense;
+        }
+    }
+
+
+    // ✅ Cập nhật ViewHolder
     class BudgetProgressViewHolder extends RecyclerView.ViewHolder {
-        TextView categoryNameTextView, progressTextView;
-        ProgressBar budgetProgressBar;
+        ImageView categoryIconImageView;
+        TextView categoryNameTextView, spentTextView, budgetTextView, statusTextView;
+        LinearProgressIndicator budgetProgressBar; // Use LinearProgressIndicator
 
         public BudgetProgressViewHolder(@NonNull View itemView) {
             super(itemView);
+            categoryIconImageView = itemView.findViewById(R.id.categoryIconImageView);
             categoryNameTextView = itemView.findViewById(R.id.categoryNameTextView);
-            progressTextView = itemView.findViewById(R.id.progressTextView);
+            spentTextView = itemView.findViewById(R.id.spentTextView);
+            budgetTextView = itemView.findViewById(R.id.budgetTextView);
+            statusTextView = itemView.findViewById(R.id.statusTextView);
             budgetProgressBar = itemView.findViewById(R.id.budgetProgressBar);
 
-            // ✅ Set OnClickListener for the whole item
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
                     int position = getAdapterPosition();

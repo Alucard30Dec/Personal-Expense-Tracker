@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.ksp)
+    alias(libs.plugins.google.gms.services) // ✅ THÊM DÒNG NÀY
 }
 
 android {
@@ -38,10 +39,9 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.mpandroidchart)
-
+    implementation(libs.play.services.auth)
     // Room dependencies
     implementation(libs.room.runtime)
-    implementation(libs.preference)
     ksp(libs.room.compiler)
 
     testImplementation(libs.junit)

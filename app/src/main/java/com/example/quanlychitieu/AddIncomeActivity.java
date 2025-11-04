@@ -22,6 +22,17 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import android.Manifest; // Cho quyền
+import android.content.ActivityNotFoundException; // Cho lỗi Speech-to-Text
+import android.content.pm.PackageManager; // Cho kiểm tra quyền
+import android.speech.RecognizerIntent; // Cho Speech-to-Text Intent
+import android.widget.ImageButton; // Cho nút microphone
+import androidx.annotation.NonNull; // Cho annotation @NonNull
+import androidx.annotation.Nullable; // Cho annotation @Nullable (trong onActivityResult)
+import androidx.core.app.ActivityCompat; // Cho yêu cầu quyền
+import androidx.core.content.ContextCompat; // Cho kiểm tra quyền
+import java.util.ArrayList; // Cho kết quả Speech-to-Text
+import android.util.Log;
 
 public class AddIncomeActivity extends AppCompatActivity {
 
@@ -32,6 +43,11 @@ public class AddIncomeActivity extends AppCompatActivity {
     private TextView dateTextView;
     private LinearLayout suggestionLayout;
     private Button suggestion1, suggestion2, suggestion3;
+    private ImageButton micButton;
+    // ✅ Thêm hằng số
+    private static final int RECORD_AUDIO_PERMISSION_CODE = 1;
+    private static final int SPEECH_REQUEST_CODE = 10;
+    private static final int EDIT_REQUEST_CODE = 101;
 
     // --- Biến dữ liệu ---
     private Calendar selectedDateCalendar;
@@ -59,11 +75,13 @@ public class AddIncomeActivity extends AppCompatActivity {
         suggestion1 = findViewById(R.id.suggestion1);
         suggestion2 = findViewById(R.id.suggestion2);
         suggestion3 = findViewById(R.id.suggestion3);
+        micButton = findViewById(R.id.micButton); // ✅ Ánh xạ nút mic
 
         // --- Cài đặt chức năng ---
         setupDatePicker();
         setupCategorySpinner();
         setupAmountSuggestions();
+        setupMicButton(); // ✅ Gọi hàm cài đặt mic
 
         saveButton.setOnClickListener(v -> saveTransaction());
     }
@@ -201,5 +219,82 @@ public class AddIncomeActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    // --- CÁC HÀM MỚI CHO CHỨC NĂNG GIỌNG NÓI ---
+    private void setupMicButton() {
+        micButton.setOnClickListener(v -> {
+            if (checkAudioPermission()) {
+                startSpeechToText();
+            } else {
+                requestAudioPermission();
+            }
+        });
+    }
+
+    private boolean checkAudioPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestAudioPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_PERMISSION_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == RECORD_AUDIO_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startSpeechToText();
+            } else {
+                Toast.makeText(this, "Cần cấp quyền ghi âm", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void startSpeechToText() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi-VN");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Nói ghi chú...");
+        try {
+            startActivityForResult(intent, SPEECH_REQUEST_CODE);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, "Thiết bị không hỗ trợ", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // --- CẬP NHẬT onActivityResult ---
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data); // Gọi super trước
+        Log.d("SpeechToText", "onActivityResult called - requestCode: " + requestCode + ", resultCode: " + resultCode); // Log khi hàm được gọi
+
+        if (requestCode == SPEECH_REQUEST_CODE) { // Kiểm tra đúng requestCode
+            if (resultCode == RESULT_OK && data != null) {
+                ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                Log.d("SpeechToText", "Result OK, data received: " + (result != null ? result.toString() : "null")); // Log kết quả
+                if (result != null && !result.isEmpty()) {
+                    noteEditText.setText(result.get(0));
+                    noteEditText.setSelection(noteEditText.getText().length());
+                } else {
+                    Log.w("SpeechToText", "Result list is null or empty"); // Log nếu không có kết quả text
+                }
+            } else {
+                // Log các trường hợp lỗi khác từ Google Speech Recognizer
+                Log.e("SpeechToText", "Speech recognition failed or cancelled. ResultCode: " + resultCode);
+                // Có thể thêm Toast thông báo lỗi ở đây nếu muốn
+                // Toast.makeText(this, "Không nhận dạng được giọng nói (Mã lỗi: " + resultCode + ")", Toast.LENGTH_SHORT).show();
+            }
+        }
+        // Xử lý kết quả sửa nếu màn hình này có sửa
+        else if (requestCode == EDIT_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+            Transaction editedTransaction = (Transaction) data.getSerializableExtra("EDITED_TRANSACTION_DATA");
+            if (editedTransaction != null) {
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("EDITED_TRANSACTION_DATA", editedTransaction);
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish();
+            }
+        }
     }
 }

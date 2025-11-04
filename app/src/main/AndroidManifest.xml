@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,14 +14,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuanLyChiTieu"
         tools:targetApi="31">
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false" />
-        <activity
-            android:name=".RegisterActivity"
-            android:exported="false" />
+
+
         <activity
             android:name=".MainActivity"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,13 +29,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".RegisterActivity" />
+        <activity android:name=".StatisticsActivity" />
         <activity android:name=".AddTransactionActivity" />
         <activity android:name=".AddIncomeActivity" />
-        <activity android:name=".StatisticsActivity" />
         <activity android:name=".TransactionDetailActivity" />
-        <activity android:name=".SetBudgetActivity" />
-        <activity android:name=".BudgetActivity" />
         <activity android:name=".CategoryTransactionsActivity" />
+        <activity android:name=".BudgetActivity" />
+        <activity android:name=".SetBudgetActivity" />
+        <activity android:name=".DebtListActivity" />
+        <activity android:name=".AddEditDebtActivity" />
+        <activity android:name=".PredictionActivity" />
+
     </application>
 
 </manifest>

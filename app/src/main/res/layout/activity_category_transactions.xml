@@ -4,30 +4,41 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <com.google.android.material.appbar.AppBarLayout
+    android:orientation="vertical"
+    android:background="?android:attr/colorBackground"> <com.google.android.material.appbar.AppBarLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="Giao dịch Hạng mục"/> </com.google.android.material.appbar.AppBarLayout>
+        android:layout_height="?attr/actionBarSize"
+        app:title="Giao dịch Hạng mục"/>
+</com.google.android.material.appbar.AppBarLayout>
 
-    <TextView
-        android:id="@+id/categoryTotalTextView"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:gravity="center_horizontal"
-        tools:text="Tổng chi cho Ăn uống tháng này: 1.485.000 đ"/>
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp">
+        <TextView
+            android:id="@+id/categoryTotalTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center_horizontal"
+            android:textColor="?android:attr/textColorPrimary"
+            tools:text="Tổng chi Ăn uống: 89.000 đ"/>
+    </com.google.android.material.card.MaterialCardView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/categoryTransactionsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
-        tools:listitem="@layout/item_transaction"/> </LinearLayout>
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        tools:listitem="@layout/item_transaction"/>
+
+</LinearLayout>

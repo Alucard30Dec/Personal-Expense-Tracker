@@ -26,6 +26,14 @@
         android:title="Chế độ Tối/Sáng"
         app:showAsAction="never"/>
     <item
+        android:id="@+id/action_debt"
+        android:title="Quản lý Vay/Nợ"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_predict"
+        android:title="Dự đoán Chi tiêu"
+        app:showAsAction="never"/>
+    <item
         android:id="@+id/action_logout"
         android:title="Đăng xuất"
         app:showAsAction="never"/>

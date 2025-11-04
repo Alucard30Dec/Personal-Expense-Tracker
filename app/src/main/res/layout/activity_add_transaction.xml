@@ -89,13 +89,33 @@
             android:text="Hôm nay"
             android:layout_marginBottom="16dp"/>
 
-        <EditText
-            android:id="@+id/noteEditText"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Ghi chú"
-            android:inputType="textCapSentences"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="24dp">
+
+            <EditText
+                android:id="@+id/noteEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Ghi chú"
+                android:inputType="textCapSentences|textMultiLine"
+                android:layout_toStartOf="@+id/micButton"
+                android:layout_centerVertical="true"/>
+
+            <ImageButton
+                android:id="@+id/micButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_mic"
+                android:scaleType="fitCenter"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Nhập ghi chú bằng giọng nói"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:padding="8dp"/>
+
+        </RelativeLayout>
 
         <Button
             android:id="@+id/saveButton"

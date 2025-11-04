@@ -13,14 +13,21 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Ngân sách Tháng này"/>
+            app:title="Dự đoán Chi tiêu Tháng Tới"/>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="Dựa trên chi tiêu trung bình 3 tháng gần nhất:"
+        android:textAppearance="?attr/textAppearanceListItemSecondary"/>
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/budgetProgressRecyclerView"
+        android:id="@+id/predictionRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="8dp"
-        tools:listitem="@layout/item_budget_progress"/>
+        tools:listitem="@layout/item_prediction"/>
 
 </LinearLayout>

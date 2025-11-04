@@ -12,21 +12,26 @@ import android.widget.Button;
 import android.widget.TextView;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import android.widget.ImageView;
+import android.view.View;      // ✅ THÊM DÒNG NÀY
+import android.widget.Toast;    // ✅ THÊM DÒNG NÀY
 
 public class TransactionDetailActivity extends AppCompatActivity {
     private TextView categoryTextView, amountTextView, dateTextView, noteTextView;
     private Button editButton, deleteButton;
     private Transaction currentTransaction;
+    private ImageView categoryIconImageView; // ✅ Thêm biến này
 
     private static final int EDIT_REQUEST_CODE = 101;
     public static final int RESULT_DELETED = 201;
     public static final int RESULT_EDITED = 202;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transaction_detail);
-
+        categoryIconImageView = findViewById(R.id.detailCategoryIcon); // ✅ Ánh xạ icon
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -50,19 +55,48 @@ public class TransactionDetailActivity extends AppCompatActivity {
     }
 
     private void populateData() {
-        if (currentTransaction == null) return;
+        if (currentTransaction == null) {
+            // Hiển thị thông báo lỗi hoặc đóng activity nếu không có dữ liệu
+            Toast.makeText(this, "Lỗi: Không có dữ liệu giao dịch.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
+        // ✅ BƯỚC 1: LẤY VÀ HIỂN THỊ ICON
+        // Đảm bảo bạn đã ánh xạ categoryIconImageView trong onCreate
+        categoryIconImageView.setImageResource(getIconForCategory(currentTransaction.getCategory()));
+
+        // Hiển thị tên hạng mục
         categoryTextView.setText(currentTransaction.getCategory());
-        noteTextView.setText("Ghi chú: " + currentTransaction.getNote());
 
+        // ✅ BƯỚC 2: CHỈ HIỂN THỊ DỮ LIỆU (Bỏ label thừa)
+        // Hiển thị ngày (đã bỏ "Ngày: ")
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        dateTextView.setText("Ngày: " + sdf.format(currentTransaction.getDate()));
+        dateTextView.setText(sdf.format(currentTransaction.getDate()));
 
+        // Hiển thị ghi chú (đã bỏ "Ghi chú: ")
+        // Thêm kiểm tra null hoặc trống cho ghi chú
+        String note = currentTransaction.getNote();
+        if (note != null && !note.trim().isEmpty()) {
+            noteTextView.setText(note);
+            noteTextView.setVisibility(View.VISIBLE); // Hiện nếu có ghi chú
+            // Tìm TextView label tương ứng và hiện nó lên (nếu bạn ẩn nó ban đầu)
+            TextView noteLabel = findViewById(R.id.detailNoteLabelTextView);
+            if(noteLabel != null) noteLabel.setVisibility(View.VISIBLE);
+        } else {
+            noteTextView.setVisibility(View.GONE); // Ẩn nếu không có ghi chú
+            // Tìm TextView label tương ứng và ẩn nó đi
+            TextView noteLabel = findViewById(R.id.detailNoteLabelTextView);
+            if(noteLabel != null) noteLabel.setVisibility(View.GONE);
+        }
+
+
+        // Hiển thị số tiền (giữ nguyên)
         if (currentTransaction.isExpense()) {
-            amountTextView.setText(String.format("-%,.0f đ", currentTransaction.getAmount()));
+            amountTextView.setText(String.format(Locale.getDefault(), "-%,.0f đ", currentTransaction.getAmount()));
             amountTextView.setTextColor(Color.RED);
         } else {
-            amountTextView.setText(String.format("+%,.0f đ", currentTransaction.getAmount()));
+            amountTextView.setText(String.format(Locale.getDefault(), "+%,.0f đ", currentTransaction.getAmount()));
             amountTextView.setTextColor(Color.parseColor("#4CAF50"));
         }
     }
@@ -115,5 +149,18 @@ public class TransactionDetailActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    private int getIconForCategory(String category) {
+        switch (category) {
+            case "Ăn uống": return R.drawable.ic_eating;
+            case "Mua sắm": return R.drawable.ic_shopping;
+            case "Di chuyển": return R.drawable.ic_transport;
+            case "Hóa đơn": return R.drawable.ic_bill;
+            case "Giải trí": return R.drawable.ic_entertainment;
+            case "Sức khỏe": return R.drawable.ic_health;
+            case "Lương": case "Thưởng": case "Bán hàng": case "Quà tặng": case "Đầu tư":
+                return R.drawable.ic_wallet;
+            default: return R.drawable.ic_expense; // Icon mặc định
+        }
     }
 }

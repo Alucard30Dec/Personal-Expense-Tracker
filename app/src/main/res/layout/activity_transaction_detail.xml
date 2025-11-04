@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    tools:context=".TransactionDetailActivity">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <androidx.appcompat.widget.Toolbar
@@ -16,68 +17,131 @@
             app:title="Chi tiết Giao dịch"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:layout_height="match_parent"
+        android:padding="24dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ImageView
+            android:id="@+id/detailCategoryIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/ic_eating"/>
 
         <TextView
             android:id="@+id/detailCategoryTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="24sp"
+            android:layout_marginStart="16dp"
+            android:textSize="22sp"
             android:textStyle="bold"
+            android:textColor="?android:attr/textColorPrimary"
+            app:layout_constraintStart_toEndOf="@id/detailCategoryIcon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/detailCategoryIcon"
+            app:layout_constraintBottom_toBottomOf="@id/detailCategoryIcon"
             tools:text="Ăn uống"/>
 
         <TextView
             android:id="@+id/detailAmountTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="36sp"
+            android:layout_marginTop="24dp"
+            android:textSize="40sp"
             android:textStyle="bold"
-            android:layout_marginTop="8dp"
-            tools:text="-50.000 đ"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/detailCategoryIcon"
+            tools:text="-50.000 đ"
+            tools:textColor="#F44336"/>
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintTop_toBottomOf="@id/detailAmountTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <TextView
+            android:id="@+id/detailDateLabelTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Ngày giao dịch:"
+            android:textSize="16sp"
+            android:alpha="0.7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider"/>
 
         <TextView
             android:id="@+id/detailDateTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorPrimary"
+            app:layout_constraintStart_toEndOf="@id/detailDateLabelTextView"
+            app:layout_constraintBaseline_toBaselineOf="@id/detailDateLabelTextView"
+            tools:text="29/09/2025"/>
+
+        <TextView
+            android:id="@+id/detailNoteLabelTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:textSize="18sp"
-            tools:text="Ngày: 29/09/2025"/>
+            android:text="Ghi chú:"
+            android:textSize="16sp"
+            android:alpha="0.7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/detailDateLabelTextView"/>
 
         <TextView
             android:id="@+id/detailNoteTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textSize="18sp"
-            tools:text="Ghi chú: Cơm trưa với bạn bè"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp">
-
-        <Button
-            android:id="@+id/editButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Chỉnh sửa"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_marginEnd="4dp"/>
+            android:layout_marginTop="4dp"
+            android:textSize="16sp"
+            android:textColor="?android:attr/textColorPrimary"
+            app:layout_constraintTop_toBottomOf="@id/detailNoteLabelTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Cơm trưa với bạn bè ở quán ABC, rất ngon nhưng hơi đắt."/>
 
-        <Button
-            android:id="@+id/deleteButton"
+        <LinearLayout
+            android:id="@+id/buttonLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Xóa"
-            android:layout_marginStart="4dp"/>
-    </LinearLayout>
-</LinearLayout>
+            android:orientation="horizontal"
+            android:paddingTop="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <Button
+                android:id="@+id/editButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Chỉnh sửa"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/deleteButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Xóa"
+                android:layout_marginStart="8dp"
+                app:backgroundTint="?attr/colorError"
+                android:textColor="?attr/colorOnError"/>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

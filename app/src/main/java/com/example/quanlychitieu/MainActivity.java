@@ -1,12 +1,12 @@
 package com.example.quanlychitieu;
-
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.chip.Chip;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -18,28 +18,30 @@ import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
 import com.google.android.material.card.MaterialCardView;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.app.AppCompatDelegate;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.text.SpannableString; // Thêm import
+import android.text.style.ForegroundColorSpan; // Thêm import
+import android.graphics.Color; // Thêm import
+import android.util.Log; // ✅ THÊM DÒNG NÀY
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 
 public class MainActivity extends AppCompatActivity implements
         TransactionAdapter.OnItemClickListener,
         SearchView.OnQueryTextListener {
-
     private static final String PREF_NIGHT_MODE = "pref_night_mode";
     private static final String PREF_LOGGED_IN = "pref_logged_in";
     private static final int MODE_LIGHT = AppCompatDelegate.MODE_NIGHT_NO;
     private static final int MODE_DARK = AppCompatDelegate.MODE_NIGHT_YES;
     private static final int MODE_SYSTEM = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
-
     // --- Biến giao diện ---
     private RecyclerView transactionsRecyclerView;
     private TransactionAdapter transactionAdapter;
@@ -60,34 +62,34 @@ public class MainActivity extends AppCompatActivity implements
     private TextView summaryExpenseTextView;
     private MaterialCardView addIncomeCard, addExpenseCard;
     private SharedPreferences prefs;
-
+    private ChipGroup filterChipGroup; // ✅ Đổi kiểu và tên biến
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // ✅ 1) Luôn gọi super trước khi có bất kỳ return nào
-        super.onCreate(savedInstanceState);
 
-        // ✅ 2) Khởi tạo SharedPreferences dùng chung
+        // --- KIỂM TRA ĐĂNG NHẬP (Dùng Preferences tạm thời) ---
+        SharedPreferences tempPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (!tempPrefs.getBoolean(PREF_LOGGED_IN, false)) {
+            // Chuyển về LoginActivity nếu chưa đăng nhập
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+            return; // Dừng thực thi onCreate
+        }
+
+        // --- KHỞI TẠO BIẾN prefs CHO TOÀN BỘ CLASS ---
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // ✅ 3) Áp dụng theme (Night Mode) trước khi setContentView
+        // --- ÁP DỤNG THEME ĐÃ LƯU ---
         int currentNightMode = prefs.getInt(PREF_NIGHT_MODE, MODE_SYSTEM);
         AppCompatDelegate.setDefaultNightMode(currentNightMode);
 
-        // ✅ 4) Kiểm tra đăng nhập: nếu chưa login → sang LoginActivity và kết thúc Main
-        if (!prefs.getBoolean(PREF_LOGGED_IN, false)) {
-            Intent i = new Intent(MainActivity.this, LoginActivity.class);
-            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(i);
-            finish();   // Kết thúc Activity đúng vòng đời
-            return;     // an toàn
-        }
+        // ✅ DI CHUYỂN super.onCreate XUỐNG ĐÂY
+        super.onCreate(savedInstanceState);
 
-        // ✅ 5) Inflate UI
+        // --- THIẾT LẬP GIAO DIỆN ---
         setContentView(R.layout.activity_main);
-
-        // ✅ 6) Khởi tạo DB/DAO
+        // ✅ BƯỚC 1: KHỞI TẠO DATABASE VÀ DAO
         db = AppDatabase.getDatabase(getApplicationContext());
         transactionDao = db.transactionDao();
 
@@ -97,13 +99,15 @@ public class MainActivity extends AppCompatActivity implements
 
         // --- Ánh xạ các View ---
         totalBalanceTextView = findViewById(R.id.totalBalanceTextView);
-        filterRadioGroup = findViewById(R.id.filterRadioGroup);
+        filterChipGroup = findViewById(R.id.filterChipGroup); // ✅ Ánh xạ ChipGroup
         mainAddFab = findViewById(R.id.mainAddFab);
         addIncomeFab = findViewById(R.id.addIncomeFab);
         addExpenseFab = findViewById(R.id.addExpenseFab);
+        // ✅ ÁNH XẠ CÁC CARDVIEW
         addIncomeCard = findViewById(R.id.addIncomeCard);
         addExpenseCard = findViewById(R.id.addExpenseCard);
         transactionsRecyclerView = findViewById(R.id.transactionsRecyclerView);
+
         summaryIncomeTextView = findViewById(R.id.summaryIncomeTextView);
         summaryExpenseTextView = findViewById(R.id.summaryExpenseTextView);
 
@@ -117,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements
         setupFabListeners();
         setupFilterListener();
 
-        // ✅ 7) Nạp dữ liệu DB
+        // ✅ BƯỚC 2: NẠP DỮ LIỆU TỪ DATABASE KHI KHỞI ĐỘNG
         loadTransactionsFromDb();
     }
 
@@ -133,14 +137,14 @@ public class MainActivity extends AppCompatActivity implements
     /**
      * Xử lý kết quả trả về từ màn hình Thêm/Sửa để LƯU vào database.
      */
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // --- Thêm mới ---
-        if ((requestCode == ADD_EXPENSE_REQUEST || requestCode == ADD_INCOME_REQUEST)
-                && resultCode == Activity.RESULT_OK && data != null) {
-
+        // --- XỬ LÝ KẾT QUẢ TỪ MÀN HÌNH "THÊM MỚI" (Code cũ của bạn) ---
+        if ((requestCode == ADD_EXPENSE_REQUEST || requestCode == ADD_INCOME_REQUEST) && resultCode == Activity.RESULT_OK && data != null) {
+            // Lấy dữ liệu thêm mới từ Intent
             double amount = data.getDoubleExtra("EXTRA_AMOUNT", 0);
             String category = data.getStringExtra("EXTRA_CATEGORY");
             String note = data.getStringExtra("EXTRA_NOTE");
@@ -155,31 +159,41 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             if (newTransaction != null) {
+                // Thêm vào database và nạp lại dữ liệu
                 transactionDao.insert(newTransaction);
                 Toast.makeText(this, "Đã thêm giao dịch!", Toast.LENGTH_SHORT).show();
                 loadTransactionsFromDb();
             }
         }
-        // --- Chi tiết: xóa / sửa ---
+        // --- KẾT THÚC XỬ LÝ THÊM MỚI ---
+
+
+        // --- XỬ LÝ KẾT QUẢ TỪ MÀN HÌNH "CHI TIẾT" (Phần logic mới) ---
         else if (requestCode == DETAIL_REQUEST_CODE && data != null) {
+            // Trường hợp người dùng chọn XÓA
             if (resultCode == TransactionDetailActivity.RESULT_DELETED) {
                 Transaction transactionToDelete = (Transaction) data.getSerializableExtra("TRANSACTION_TO_DELETE");
                 if (transactionToDelete != null) {
                     transactionDao.delete(transactionToDelete);
                     Toast.makeText(this, "Đã xóa giao dịch", Toast.LENGTH_SHORT).show();
-                    loadTransactionsFromDb();
+                    loadTransactionsFromDb(); // Nạp lại dữ liệu sau khi xóa
                 }
-            } else if (resultCode == TransactionDetailActivity.RESULT_EDITED) {
+            }
+            // Trường hợp người dùng chọn SỬA và đã CẬP NHẬT
+            else if (resultCode == TransactionDetailActivity.RESULT_EDITED) {
                 Transaction editedTransaction = (Transaction) data.getSerializableExtra("EDITED_TRANSACTION_DATA");
                 if (editedTransaction != null) {
                     transactionDao.update(editedTransaction);
                     Toast.makeText(this, "Đã cập nhật giao dịch", Toast.LENGTH_SHORT).show();
-                    loadTransactionsFromDb();
+                    loadTransactionsFromDb(); // Nạp lại dữ liệu sau khi sửa
                 }
             }
         }
     }
 
+    /**
+     * Xử lý sự kiện nhấn để XÓA một giao dịch khỏi database.
+     */
     @Override
     public void onItemClick(int position) {
         Transaction clickedTransaction = transactionAdapter.getTransactionAt(position);
@@ -190,14 +204,20 @@ public class MainActivity extends AppCompatActivity implements
         startActivityForResult(intent, DETAIL_REQUEST_CODE);
     }
 
+    // --------------------------------------------------------------------
+    // CÁC HÀM TIỆN ÍCH (Giữ nguyên, không thay đổi)
+    // --------------------------------------------------------------------
+
     private void setupFabListeners() {
         isAllFabsVisible = false;
         mainAddFab.setOnClickListener(view -> {
             if (!isAllFabsVisible) {
+                // ✅ HIỆN CARDVIEW
                 addIncomeCard.setVisibility(View.VISIBLE);
                 addExpenseCard.setVisibility(View.VISIBLE);
                 isAllFabsVisible = true;
             } else {
+                // ✅ ẨN CARDVIEW
                 addIncomeCard.setVisibility(View.GONE);
                 addExpenseCard.setVisibility(View.GONE);
                 isAllFabsVisible = false;
@@ -214,8 +234,16 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void setupFilterListener() {
-        filterRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            filterTransactions(getSelectedFilter());
+        filterChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            // checkedIds là một List<Integer> chứa ID của chip được chọn
+            // Vì là singleSelection nên list này thường chỉ có 1 phần tử hoặc rỗng
+            if (!checkedIds.isEmpty()) {
+                filterTransactions(getSelectedFilter()); // Gọi hàm lọc như cũ
+            } else {
+                // Xử lý trường hợp không có chip nào được chọn (nếu cần)
+                // Ví dụ: Mặc định về "Tất cả"
+                filterChipGroup.check(R.id.chip_all); // Tự động chọn lại "Tất cả"
+            }
         });
     }
 
@@ -233,6 +261,7 @@ public class MainActivity extends AppCompatActivity implements
         if (allTransactionsList != null) {
             for (Transaction transaction : allTransactionsList) {
                 boolean matchesPeriod = false;
+                // 1. KIỂM TRA MỐC THỜI GIAN
                 switch (period) {
                     case "today":
                         if (!transaction.getDate().before(startOfToday)) matchesPeriod = true;
@@ -249,8 +278,9 @@ public class MainActivity extends AppCompatActivity implements
                         break;
                 }
 
+                // 2. NẾU KHỚP MỐC THỜI GIAN, KIỂM TRA TIẾP TỪ KHÓA TÌM KIẾM
                 if (matchesPeriod) {
-                    boolean matchesSearch = true;
+                    boolean matchesSearch = true; // Mặc định là khớp nếu không có từ khóa
                     if (!currentSearchQuery.isEmpty()) {
                         String noteLower = transaction.getNote() != null ? transaction.getNote().toLowerCase() : "";
                         String categoryLower = transaction.getCategory() != null ? transaction.getCategory().toLowerCase() : "";
@@ -281,23 +311,65 @@ public class MainActivity extends AppCompatActivity implements
 
         double balance = totalIncome - totalExpense;
 
+        // ✅ CẬP NHẬT TEXTVIEW MỚI
         summaryIncomeTextView.setText(String.format("%,.0f đ", totalIncome));
         summaryExpenseTextView.setText(String.format("%,.0f đ", totalExpense));
+
+        // Cập nhật tổng số dư (giữ nguyên)
         totalBalanceTextView.setText(String.format("%,.0f đ", balance));
     }
 
     private String getSelectedFilter() {
-        int checkedId = filterRadioGroup.getCheckedRadioButtonId();
-        if (checkedId == R.id.radio_today) return "today";
-        if (checkedId == R.id.radio_week) return "week";
-        if (checkedId == R.id.radio_month) return "month";
+        // ✅ Lấy ID chip được chọn từ ChipGroup
+        int checkedId = filterChipGroup.getCheckedChipId();
+
+        if (checkedId == R.id.chip_today) return "today";
+        if (checkedId == R.id.chip_week) return "week";
+        if (checkedId == R.id.chip_month) return "month";
+        // Mặc định là "all" nếu không có gì được chọn hoặc ID là chip_all
         return "all";
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main_menu, menu);
 
+        // --- KIỂM TRA NỢ ĐẾN HẠN/QUÁ HẠN ---
+        Calendar cal = Calendar.getInstance();
+        // Set time to the end of the day to include today's due dates
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        Date today = cal.getTime();
+
+        int overdueCount = 0;
+        // Make sure db and transactionDao are initialized before calling this
+        if (db != null && db.debtDao() != null) {
+            DebtDao debtDao = db.debtDao(); // Get the DAO instance
+            overdueCount = debtDao.countOverdueOrDueTodayDebts(today);
+        } else {
+            Log.e("MainActivity", "Database or DebtDao not initialized in onCreateOptionsMenu");
+            // Handle the case where the database is not ready yet, maybe just don't highlight
+        }
+
+
+        MenuItem debtMenuItem = menu.findItem(R.id.action_debt);
+        if (debtMenuItem != null) {
+            if (overdueCount > 0) {
+                // Apply red color span if there are overdue debts
+                SpannableString spannableTitle = new SpannableString(debtMenuItem.getTitle());
+                spannableTitle.setSpan(new ForegroundColorSpan(Color.RED), 0, spannableTitle.length(), 0);
+                debtMenuItem.setTitle(spannableTitle);
+                // Optionally add a warning icon: debtMenuItem.setIcon(R.drawable.ic_warning);
+            } else {
+                // No overdue debts, ensure default title/color (usually handled automatically by menu inflation)
+                // You could explicitly reset it if needed, but often not necessary:
+                // debtMenuItem.setTitle(getString(R.string.action_debt_title)); // Assuming you have this string resource
+            }
+        }
+        // --- KẾT THÚC KIỂM TRA NỢ ---
+
+        // --- CÀI ĐẶT SEARCHVIEW (Code cũ của bạn) ---
         MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) searchItem.getActionView();
         if (searchView != null) {
@@ -306,21 +378,25 @@ public class MainActivity extends AppCompatActivity implements
 
             searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
                 @Override
-                public boolean onMenuItemActionExpand(MenuItem item) { return true; }
+                public boolean onMenuItemActionExpand(MenuItem item) {
+                    return true; // Allow expand
+                }
+
                 @Override
                 public boolean onMenuItemActionCollapse(MenuItem item) {
-                    currentSearchQuery = "";
-                    filterTransactions(getSelectedFilter());
-                    return true;
+                    // When SearchView collapses
+                    currentSearchQuery = ""; // Clear search filter
+                    filterTransactions(getSelectedFilter()); // Refilter list
+                    return true; // Allow collapse
                 }
             });
             searchView.setOnCloseListener(() -> {
                 currentSearchQuery = "";
                 filterTransactions(getSelectedFilter());
-                return false;
+                return false; // Allow SearchView to close
             });
         }
-        return true;
+        return true; // Return true to display the menu
     }
 
     @Override
@@ -332,28 +408,45 @@ public class MainActivity extends AppCompatActivity implements
             startActivity(intent);
             return true;
         } else if (itemId == R.id.action_support) {
-            String facebookUrl = "https://www.facebook.com/Nhan271104";
+            String facebookUrl = "https://www.facebook.com/Nhan271104"; // Thay bằng link FB của bạn
             try {
+                // Thử mở bằng app Facebook
                 getPackageManager().getPackageInfo("com.facebook.katana", 0);
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("fb://facewebmodal/f?href=" + facebookUrl)));
             } catch (Exception e) {
+                // Nếu không có app, mở bằng trình duyệt
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(facebookUrl)));
             }
             return true;
-        } else if (itemId == R.id.action_budget) {
+        }
+        else if (itemId == R.id.action_budget) {
             Intent intent = new Intent(this, BudgetActivity.class);
             startActivity(intent);
             return true;
-        } else if (itemId == R.id.action_theme) {
-            showThemeDialog();
+        }
+        // ✅ THÊM XỬ LÝ CHO action_theme
+        else if (itemId == R.id.action_theme) {
+            showThemeDialog(); // Gọi hàm hiển thị hộp thoại
             return true;
-        } else if (itemId == R.id.action_logout) {
-            logoutUser();
+        }
+        // ✅ THÊM XỬ LÝ CHO NÚT ĐĂNG XUẤT
+        else if (itemId == R.id.action_logout) {
+            logoutUser(); // Gọi hàm đăng xuất
+            return true;
+        }
+        else if (itemId == R.id.action_debt) {
+            Intent intent = new Intent(this, DebtListActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        else if (itemId == R.id.action_predict) {
+            Intent intent = new Intent(this, PredictionActivity.class);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
+    // ✅ HÀM MỚI ĐỂ HIỂN THỊ HỘP THOẠI CHỌN THEME
     private void showThemeDialog() {
         final String[] themes = {"Sáng", "Tối", "Theo hệ thống"};
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -373,39 +466,68 @@ public class MainActivity extends AppCompatActivity implements
                 .setSingleChoiceItems(themes, checkedItem, (dialog, which) -> {
                     int selectedMode;
                     switch (which) {
-                        case 0: selectedMode = MODE_LIGHT; break;
-                        case 1: selectedMode = MODE_DARK; break;
-                        case 2:
-                        default: selectedMode = MODE_SYSTEM; break;
+                        case 0: // Sáng
+                            selectedMode = MODE_LIGHT;
+                            break;
+                        case 1: // Tối
+                            selectedMode = MODE_DARK;
+                            break;
+                        case 2: // Theo hệ thống
+                        default:
+                            selectedMode = MODE_SYSTEM;
+                            break;
                     }
+                    // Lưu lựa chọn mới
                     prefs.edit().putInt(PREF_NIGHT_MODE, selectedMode).apply();
+                    // Áp dụng theme ngay lập tức
                     AppCompatDelegate.setDefaultNightMode(selectedMode);
                     dialog.dismiss();
+                    // recreate(); // Có thể gọi recreate() để Activity vẽ lại ngay lập tức, nhưng setDefaultNightMode thường đủ
                 })
                 .show();
     }
-
     @Override
     public boolean onQueryTextSubmit(String query) {
-        currentSearchQuery = query != null ? query.toLowerCase().trim() : "";
+        currentSearchQuery = query != null ? query.toLowerCase().trim() : ""; // ✅ CẬP NHẬT BIẾN
         filterTransactions(getSelectedFilter());
+        // Bạn có thể ẩn bàn phím ở đây nếu muốn
         return false;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        currentSearchQuery = newText != null ? newText.toLowerCase().trim() : "";
-        filterTransactions(getSelectedFilter());
+        currentSearchQuery = newText != null ? newText.toLowerCase().trim() : ""; // ✅ CẬP NHẬT BIẾN
+        filterTransactions(getSelectedFilter()); // Lọc lại danh sách
         return true;
     }
-
+    // ✅ HÀM ĐĂNG XUẤT
     private void logoutUser() {
+        // Xóa trạng thái đăng nhập SharedPreferences
         prefs.edit().putBoolean(PREF_LOGGED_IN, false).apply();
+        // (Tùy chọn) Xóa ID/email người dùng đã lưu
+        // prefs.edit().remove("CURRENT_USER_ID").apply();
+        // prefs.edit().remove("CURRENT_USER_EMAIL").apply();
+
+
+        // ✅ ĐĂNG XUẤT KHỎI GOOGLE
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail() // Phải giống với GSO khi đăng nhập
+                .build();
+        GoogleSignIn.getClient(this, gso).signOut().addOnCompleteListener(task -> {
+            Log.d("MainActivity", "Đã đăng xuất khỏi Google.");
+        });
+
+        // Chuyển về màn hình Đăng nhập
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                | Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finishAffinity();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        invalidateOptionsMenu(); // Yêu cầu vẽ lại menu để cập nhật màu sắc
+        // Có thể gọi lại loadTransactionsFromDb() ở đây nếu cần cập nhật cả danh sách
+        // loadTransactionsFromDb();
     }
 }

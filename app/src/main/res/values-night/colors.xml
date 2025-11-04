@@ -1,8 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg">#0F172A</color>
-    <color name="md_sys_color_outline">#8B8F97</color>
-    <color name="md_sys_color_on_surface">#E3E3E8</color>
+    <color name="primary_dark">#FFBB86FC</color> <color name="primary_variant_dark">#FF3700B3</color>
+    <color name="secondary_dark">#FF03DAC5</color>
 
-    <color name="brand_primary">#60A5FA</color>
-    <color name="brand_on_primary">#0A0A0A</color>
-</resources>
+    <color name="background_dark">#121212</color> <color name="surface_dark">#1E1E1E</color> <color name="on_primary_dark">#000000</color> <color name="on_background_dark">#E0E0E0</color> <color name="on_surface_dark">#CCCCCC</color> <color name="error_dark">#CF6679</color> <color name="on_error_dark">#000000</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="my_green_primary">#4CAF50</color> </resources>

@@ -96,7 +96,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                 return R.drawable.ic_wallet;
             default:
                 // Icon mặc định nếu không khớp
-                return R.drawable.ic_expense;
+                return R.drawable.ic_question_mark;
         }
     }
 

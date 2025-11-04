@@ -5,256 +5,184 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_login_gradient"
+    android:background="#F5F5F5"
     tools:context=".MainActivity">
 
-    <!-- AppBar + Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:elevation="0dp">
-
+        android:layout_height="wrap_content">
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:layout_scrollFlags="scroll|enterAlways"
-            app:title="@string/app_name"
-            app:titleTextColor="@color/md_sys_color_on_surface"/>
+            app:title="@string/app_name" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Nội dung cuộn -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:clipToPadding="false"
-        android:paddingBottom="150dp">
-
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- Card: Tóm tắt -->
-            <com.google.android.material.card.MaterialCardView
+            android:orientation="vertical"
+            android:paddingBottom="150dp"> <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:strokeColor="@color/md_sys_color_outline"
-                app:strokeWidth="1dp">
-
+                android:orientation="vertical"
+                android:padding="16dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tóm tắt Giao dịch"
+                    android:textSize="14sp"
+                    android:alpha="0.7"/>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Tóm tắt giao dịch"
-                        android:textSize="14sp"
-                        android:textColor="@color/md_sys_color_on_surface"
-                        android:alpha="0.7"/>
-
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp">
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="10dp">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center_horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Tổng Thu"
-                                android:textColor="@color/brand_primary"
-                                android:alpha="0.9"/>
-
-                            <TextView
-                                android:id="@+id/summaryIncomeTextView"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0 đ"
-                                android:textColor="@color/brand_primary"
-                                android:textSize="20sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
+                            android:text="Tổng Thu"
+                            android:textColor="#4CAF50"/>
+                        <TextView
+                            android:id="@+id/summaryIncomeTextView"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center_horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Tổng Chi"
-                                android:textColor="#F44336"
-                                android:alpha="0.9"/>
-
-                            <TextView
-                                android:id="@+id/summaryExpenseTextView"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0 đ"
-                                android:textColor="#F44336"
-                                android:textSize="20sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
+                            android:text="0 đ"
+                            android:textColor="#4CAF50"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tổng Chi"
+                            android:textColor="#F44336"/>
+                        <TextView
+                            android:id="@+id/summaryExpenseTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 đ"
+                            android:textColor="#F44336"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
                     </LinearLayout>
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-            <!-- Bộ lọc thời gian (Radio chips) -->
-            <com.google.android.material.card.MaterialCardView
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/filterChipGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginTop="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/md_sys_color_outline"
-                app:strokeWidth="1dp">
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                app:singleSelection="true"
+                app:chipSpacingHorizontal="8dp">
 
-                <RadioGroup
-                    android:id="@+id/filterRadioGroup"
-                    android:layout_width="match_parent"
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_today"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:padding="8dp">
+                    android:text="Hôm nay"/>
 
-                    <RadioButton
-                        android:id="@+id/radio_today"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_margin="4dp"
-                        android:paddingLeft="14dp"
-                        android:paddingRight="14dp"
-                        android:text="Hôm nay"
-                        android:background="@drawable/radio_chip_bg"
-                        android:button="@null"
-                        android:textColor="@color/md_sys_color_on_surface"/>
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_week"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tuần"/>
 
-                    <RadioButton
-                        android:id="@+id/radio_week"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_margin="4dp"
-                        android:paddingLeft="14dp"
-                        android:paddingRight="14dp"
-                        android:text="Tuần"
-                        android:background="@drawable/radio_chip_bg"
-                        android:button="@null"
-                        android:textColor="@color/md_sys_color_on_surface"/>
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_month"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tháng"/>
 
-                    <RadioButton
-                        android:id="@+id/radio_month"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_margin="4dp"
-                        android:paddingLeft="14dp"
-                        android:paddingRight="14dp"
-                        android:text="Tháng"
-                        android:background="@drawable/radio_chip_bg"
-                        android:button="@null"
-                        android:textColor="@color/md_sys_color_on_surface"/>
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_all"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Tất cả"/>
 
-                    <RadioButton
-                        android:id="@+id/radio_all"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_margin="4dp"
-                        android:paddingLeft="14dp"
-                        android:paddingRight="14dp"
-                        android:text="Tất cả"
-                        android:checked="true"
-                        android:background="@drawable/radio_chip_bg"
-                        android:button="@null"
-                        android:textColor="@color/md_sys_color_on_surface"/>
-                </RadioGroup>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Tiêu đề + danh sách -->
+            </com.google.android.material.chip.ChipGroup>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Giao dịch gần đây"
-                android:textSize="18sp"
+                android:text="Lịch sử chi tiêu " android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/md_sys_color_on_surface"
-                android:layout_marginStart="16dp"
+                android:textColor="@color/black" android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"/>
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/transactionsRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"/>
+                android:layout_marginTop="8dp"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Tổng số dư (card nổi) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/balanceCardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_margin="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="10dp">
-
+        app:cardCornerRadius="12dp"
+        app:cardElevation="8dp">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="16dp">
-
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Tổng số dư"
-                android:textSize="18sp"
-                android:textColor="@color/md_sys_color_on_surface"/>
-
+                android:textSize="18sp" />
             <TextView
                 android:id="@+id/totalBalanceTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0 đ"
-                android:textColor="@color/md_sys_color_on_surface"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="22sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- FAB nhóm thêm giao dịch -->
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="96dp">
+        android:layout_marginBottom="90dp">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/addIncomeCard"
@@ -263,18 +191,15 @@
             android:layout_gravity="bottom|end"
             android:layout_marginBottom="70dp"
             app:cardCornerRadius="28dp"
-            app:cardElevation="8dp"
-            android:visibility="gone">
+            app:cardElevation="6dp"
+            android:visibility="gone" >
 
             <ImageButton
                 android:id="@+id/addIncomeFab"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/ic_income"
-                android:scaleType="fitCenter"
-                android:padding="12dp"
-                app:tint="@color/brand_primary"
-                android:background="@android:color/transparent"
+                android:scaleType="fitCenter"  android:padding="12dp"        android:background="@android:color/transparent"
                 android:contentDescription="Thêm thu nhập"/>
         </com.google.android.material.card.MaterialCardView>
 
@@ -285,18 +210,15 @@
             android:layout_gravity="bottom|end"
             android:layout_marginBottom="140dp"
             app:cardCornerRadius="28dp"
-            app:cardElevation="8dp"
-            android:visibility="gone">
+            app:cardElevation="6dp"
+            android:visibility="gone" >
 
             <ImageButton
                 android:id="@+id/addExpenseFab"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/ic_expense"
-                android:scaleType="fitCenter"
-                android:padding="12dp"
-                app:tint="#F44336"
-                android:background="@android:color/transparent"
+                android:scaleType="fitCenter"  android:padding="12dp"        android:background="@android:color/transparent"
                 android:contentDescription="Thêm chi tiêu"/>
         </com.google.android.material.card.MaterialCardView>
 
@@ -306,17 +228,14 @@
             android:layout_height="56dp"
             android:layout_gravity="bottom|end"
             app:cardCornerRadius="28dp"
-            app:cardElevation="10dp">
+            app:cardElevation="6dp" >
 
             <ImageButton
                 android:id="@+id/mainAddFab"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/ic_add"
-                android:scaleType="fitCenter"
-                android:padding="12dp"
-                app:tint="@color/brand_primary"
-                android:background="@android:color/transparent"
+                android:scaleType="fitCenter"  android:padding="12dp"        android:background="@android:color/transparent"
                 android:contentDescription="Thêm giao dịch mới"/>
         </com.google.android.material.card.MaterialCardView>
     </FrameLayout>

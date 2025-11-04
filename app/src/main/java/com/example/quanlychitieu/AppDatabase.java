@@ -6,11 +6,12 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-@Database(entities = {Transaction.class, Budget.class}, version = 2, exportSchema = false)
+@Database(entities = {Transaction.class, Budget.class, Debt.class}, version = 3, exportSchema = false)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract TransactionDao transactionDao();
     public abstract BudgetDao budgetDao(); // ✅ THÊM DAO CHO BUDGET
+    public abstract DebtDao debtDao(); // ✅ THÊM DAO CHO DEBT
 
     private static volatile AppDatabase INSTANCE;
 

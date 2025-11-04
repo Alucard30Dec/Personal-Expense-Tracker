@@ -22,6 +22,18 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import android.Manifest; // Import
+import android.content.ActivityNotFoundException; // Import
+import android.content.pm.PackageManager; // Import
+import android.speech.RecognizerIntent; // Import
+import android.widget.ImageButton; // Import
+import androidx.annotation.NonNull; // Import
+import androidx.annotation.Nullable; // Import
+import androidx.core.app.ActivityCompat; // Import
+import androidx.core.content.ContextCompat; // Import
+import java.util.ArrayList; // Import
+import android.util.Log;
+
 
 public class AddTransactionActivity extends AppCompatActivity {
 
@@ -33,7 +45,10 @@ public class AddTransactionActivity extends AppCompatActivity {
     private LinearLayout suggestionLayout;
     private Button suggestion1, suggestion2, suggestion3;
     private Transaction transactionToEdit = null; // Biến để lưu giao dịch cần sửa
-
+    private static final int RECORD_AUDIO_PERMISSION_CODE = 1;
+    private static final int SPEECH_REQUEST_CODE = 10;
+    private static final int EDIT_REQUEST_CODE = 101; // Giữ lại hằng số cũ nếu cần
+    private ImageButton micButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,11 +72,13 @@ public class AddTransactionActivity extends AppCompatActivity {
         suggestion1 = findViewById(R.id.suggestion1);
         suggestion2 = findViewById(R.id.suggestion2);
         suggestion3 = findViewById(R.id.suggestion3);
+        micButton = findViewById(R.id.micButton); // Ánh xạ nút mic
 
         // --- Cài đặt các chức năng ---
         setupDatePicker();
         setupCategorySpinner();
         setupAmountSuggestions();
+        setupMicButton(); // Gọi hàm cài đặt mic
         saveButton.setOnClickListener(v -> saveTransaction());
         // KIỂM TRA XEM CÓ DỮ LIỆU SỬA ĐƯỢC GỬI SANG KHÔNG
         if (getIntent().hasExtra("EDIT_TRANSACTION_DATA")) {
@@ -93,7 +110,7 @@ public class AddTransactionActivity extends AppCompatActivity {
     // ✅ BẠN ĐANG THIẾU CÁC HÀM DƯỚI ĐÂY
 
     private void setupCategorySpinner() {
-        String[] categories = {"Ăn uống", "Mua sắm", "Di chuyển", "Hóa đơn", "Giải trí", "Sức khỏe"};
+        String[] categories = {"Ăn uống", "Mua sắm", "Di chuyển", "Hóa đơn", "Giải trí", "Sức khỏe", "Khác"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categories);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         categorySpinner.setAdapter(adapter);
@@ -224,5 +241,85 @@ public class AddTransactionActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    // --- CÁC HÀM MỚI CHO CHỨC NĂNG GIỌNG NÓI ---
+
+    private void setupMicButton() {
+        micButton.setOnClickListener(v -> {
+            if (checkAudioPermission()) {
+                startSpeechToText();
+            } else {
+                requestAudioPermission();
+            }
+        });
+    }
+
+    private boolean checkAudioPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestAudioPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_PERMISSION_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == RECORD_AUDIO_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startSpeechToText();
+            } else {
+                Toast.makeText(this, "Cần cấp quyền ghi âm để sử dụng tính năng này", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void startSpeechToText() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi-VN");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Nói ghi chú của bạn...");
+
+        try {
+            startActivityForResult(intent, SPEECH_REQUEST_CODE);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, "Thiết bị không hỗ trợ nhập giọng nói", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // --- CẬP NHẬT onActivityResult ---
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data); // Gọi super trước
+        Log.d("SpeechToText", "onActivityResult called - requestCode: " + requestCode + ", resultCode: " + resultCode); // Log khi hàm được gọi
+
+        if (requestCode == SPEECH_REQUEST_CODE) { // Kiểm tra đúng requestCode
+            if (resultCode == RESULT_OK && data != null) {
+                ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                Log.d("SpeechToText", "Result OK, data received: " + (result != null ? result.toString() : "null")); // Log kết quả
+                if (result != null && !result.isEmpty()) {
+                    noteEditText.setText(result.get(0));
+                    noteEditText.setSelection(noteEditText.getText().length());
+                } else {
+                    Log.w("SpeechToText", "Result list is null or empty"); // Log nếu không có kết quả text
+                }
+            } else {
+                // Log các trường hợp lỗi khác từ Google Speech Recognizer
+                Log.e("SpeechToText", "Speech recognition failed or cancelled. ResultCode: " + resultCode);
+                // Có thể thêm Toast thông báo lỗi ở đây nếu muốn
+                // Toast.makeText(this, "Không nhận dạng được giọng nói (Mã lỗi: " + resultCode + ")", Toast.LENGTH_SHORT).show();
+            }
+        }
+        // Xử lý kết quả từ màn hình sửa (nếu có)
+        else if (requestCode == EDIT_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+            Transaction editedTransaction = (Transaction) data.getSerializableExtra("EDITED_TRANSACTION_DATA");
+            if (editedTransaction != null) {
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("EDITED_TRANSACTION_DATA", editedTransaction);
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish(); // Đóng lại sau khi nhận kết quả sửa thành công
+            }
+        }
+        // Có thể thêm các else if cho các requestCode khác nếu cần
     }
 }

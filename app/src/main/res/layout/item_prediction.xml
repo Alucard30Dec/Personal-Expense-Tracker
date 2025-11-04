@@ -10,60 +10,48 @@
     android:layout_marginTop="4dp"
     android:layout_marginBottom="4dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="1dp">
+    app:cardElevation="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/categoryIconImageView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:srcCompat="@drawable/ic_eating"
-            android:contentDescription="Icon hạng mục"/>
+            tools:src="@drawable/ic_eating"/>
 
         <TextView
             android:id="@+id/categoryNameTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="16dp"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="?android:attr/textColorPrimary"
             app:layout_constraintStart_toEndOf="@id/categoryIconImageView"
-            app:layout_constraintEnd_toStartOf="@id/amountTextView"
+            app:layout_constraintEnd_toStartOf="@id/predictedAmountTextView"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             tools:text="Ăn uống"/>
 
         <TextView
-            android:id="@+id/transactionNoteTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textSize="14sp"
-            android:textColor="?android:attr/textColorSecondary"
-            app:layout_constraintStart_toStartOf="@id/categoryNameTextView"
-            app:layout_constraintEnd_toEndOf="@id/categoryNameTextView"
-            app:layout_constraintTop_toBottomOf="@id/categoryNameTextView"
-            tools:text="Tiền cơm trưa hôm nay ăn cùng bạn bè ở quán A"/>
-
-        <TextView
-            android:id="@+id/amountTextView"
+            android:id="@+id/predictedAmountTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="#F44336"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="-89.000 đ"
-            tools:textColor="#F44336"/>
+            tools:text="~ 1.500.000 đ"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -33,16 +33,15 @@ public class BudgetActivity extends AppCompatActivity implements BudgetProgressA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_budget);
+        setContentView(R.layout.activity_budget); // Dòng này có thể gây lỗi nếu layout sai
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar); // Kiểm tra ID toolbar
         setSupportActionBar(toolbar);
-        // Kích hoạt nút Up (quay lại)
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        budgetProgressRecyclerView = findViewById(R.id.budgetProgressRecyclerView);
+        budgetProgressRecyclerView = findViewById(R.id.budgetProgressRecyclerView); // Kiểm tra ID RecyclerView
         budgetDao = AppDatabase.getDatabase(this).budgetDao();
         transactionDao = AppDatabase.getDatabase(this).transactionDao();
 
@@ -50,11 +49,14 @@ public class BudgetActivity extends AppCompatActivity implements BudgetProgressA
         currentMonthYear = sdf.format(Calendar.getInstance().getTime());
 
         budgetProgressRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // Khởi tạo adapter với danh sách rỗng trước
+
+        // Khởi tạo adapter ở đây hoặc trong loadBudgetData nhưng phải đúng constructor
         budgetProgressData = new ArrayList<>();
-        adapter = new BudgetProgressAdapter(budgetProgressData);
-        adapter.setOnCategoryClickListener(this); // ✅ CÀI ĐẶT LISTENER Ở ĐÂY
+        adapter = new BudgetProgressAdapter(this, budgetProgressData); // Đảm bảo có 'this'
+        adapter.setOnCategoryClickListener(this);
         budgetProgressRecyclerView.setAdapter(adapter);
+
+        // loadBudgetData() thường được gọi trong onResume()
     }
 
     @Override
@@ -82,7 +84,7 @@ public class BudgetActivity extends AppCompatActivity implements BudgetProgressA
             // Đảm bảo tính toán dựa trên tháng chính xác
             SimpleDateFormat monthFormat = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
             Date monthDate = monthFormat.parse(currentMonthYear);
-            cal.setTime(monthDate);
+            cal.setTime(monthDate != null ? monthDate : new Date()); // Thêm kiểm tra null
         } catch (Exception e) {
             cal.setTime(new Date()); // Dự phòng về ngày hiện tại
         }
@@ -94,7 +96,7 @@ public class BudgetActivity extends AppCompatActivity implements BudgetProgressA
 
         for (Transaction t : allTransactions) {
             // Lọc các khoản chi tiêu trong tháng hiện tại
-            if (t.isExpense() && !t.getDate().before(startOfMonth) && t.getDate().before(startOfNextMonth)) {
+            if (t.isExpense() && t.getDate() != null && !t.getDate().before(startOfMonth) && t.getDate().before(startOfNextMonth)) { // Thêm kiểm tra null cho date
                 String category = t.getCategory();
                 spentMap.put(category, spentMap.getOrDefault(category, 0.0) + t.getAmount());
             }
@@ -102,18 +104,25 @@ public class BudgetActivity extends AppCompatActivity implements BudgetProgressA
 
         // 3. Tạo dữ liệu hiển thị
         // Sử dụng danh sách hạng mục chi tiêu đã định nghĩa
-        List<String> expenseCategories = Arrays.asList("Ăn uống", "Mua sắm", "Di chuyển", "Hóa đơn", "Giải trí", "Sức khỏe");
+        List<String> expenseCategories = Arrays.asList("Ăn uống", "Mua sắm", "Di chuyển", "Hóa đơn", "Giải trí", "Sức khỏe","Khác");
         for (String category : expenseCategories) {
             double budgetAmount = budgetMap.getOrDefault(category, 0.0);
             double spentAmount = spentMap.getOrDefault(category, 0.0);
-            // Chỉ thêm những hạng mục có đặt ngân sách
-            if (budgetAmount > 0) {
+            // Chỉ thêm những hạng mục có đặt ngân sách HOẶC có chi tiêu
+            if (budgetAmount > 0 || spentAmount > 0) {
                 budgetProgressData.add(new BudgetProgress(category, budgetAmount, spentAmount));
             }
         }
 
-        // Thông báo cho adapter biết dữ liệu đã thay đổi
-        adapter.notifyDataSetChanged();
+        // --- SỬA DÒNG NÀY ---
+        // Kiểm tra xem adapter đã được khởi tạo chưa (tránh lỗi khi hàm được gọi lần đầu từ onCreate)
+        if (adapter == null) {
+            adapter = new BudgetProgressAdapter(this, budgetProgressData); // Khởi tạo nếu chưa có
+            adapter.setOnCategoryClickListener(this); // Set listener
+            budgetProgressRecyclerView.setAdapter(adapter); // Set adapter cho RecyclerView
+        } else {
+            adapter.notifyDataSetChanged(); // Chỉ cần cập nhật dữ liệu nếu adapter đã có
+        }
     }
 
     // ✅ Implement phương thức từ interface click listener

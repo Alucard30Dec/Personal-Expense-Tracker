@@ -37,6 +37,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
+import com.google.android.material.chip.ChipGroup;
 public class StatisticsActivity extends AppCompatActivity {
 
     private List<Transaction> fullTransactionList; // Danh sách đầy đủ
@@ -45,7 +46,7 @@ public class StatisticsActivity extends AppCompatActivity {
     private RadioGroup statsFilterRadioGroup;
     private BarChart barChart;
     private LineChart lineChart;
-
+    private ChipGroup statsFilterChipGroup; // ✅ Đổi kiểu và tên biến
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,7 +61,7 @@ public class StatisticsActivity extends AppCompatActivity {
         pieChart = findViewById(R.id.pieChart);
         barChart = findViewById(R.id.barChart);
         lineChart = findViewById(R.id.lineChart);
-        statsFilterRadioGroup = findViewById(R.id.statsFilterRadioGroup);
+        statsFilterChipGroup = findViewById(R.id.statsFilterChipGroup);
 
         // Nhận danh sách giao dịch đầy đủ từ MainActivity
         fullTransactionList = (ArrayList<Transaction>) getIntent().getSerializableExtra("TRANSACTION_LIST");
@@ -69,15 +70,22 @@ public class StatisticsActivity extends AppCompatActivity {
         filterAndDisplayData("all");
 
         // Lắng nghe sự kiện lọc
-        statsFilterRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.stats_radio_today) {
-                filterAndDisplayData("today");
-            } else if (checkedId == R.id.stats_radio_week) {
-                filterAndDisplayData("week");
-            } else if (checkedId == R.id.stats_radio_month) {
-                filterAndDisplayData("month");
-            } else if (checkedId == R.id.stats_radio_all) {
-                filterAndDisplayData("all");
+        statsFilterChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            // checkedIds là List<Integer>
+            if (!checkedIds.isEmpty()) {
+                int checkedId = checkedIds.get(0); // Lấy ID của chip duy nhất được chọn
+                if (checkedId == R.id.stats_chip_today) {
+                    filterAndDisplayData("today");
+                } else if (checkedId == R.id.stats_chip_week) {
+                    filterAndDisplayData("week");
+                } else if (checkedId == R.id.stats_chip_month) {
+                    filterAndDisplayData("month");
+                } else if (checkedId == R.id.stats_chip_all) {
+                    filterAndDisplayData("all");
+                }
+            } else {
+                // Nếu không có gì được chọn, mặc định về "Tất cả" (hoặc xử lý khác)
+                statsFilterChipGroup.check(R.id.stats_chip_all);
             }
         });
     }

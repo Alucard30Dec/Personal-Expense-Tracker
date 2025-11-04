@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.0" # Sử dụng một phiên bản AGP ổn định
+agp = "8.1.0" # Sử dụng một phiên bản AGP ổn định
 kotlin = "1.9.0" # Đặt phiên bản Kotlin
 ksp = "1.9.0-1.0.13" # Phiên bản KSP tương ứng với Kotlin
 room = "2.6.1"
@@ -10,7 +10,8 @@ appcompat = "1.6.1"
 material = "1.10.0"
 activity = "1.8.0"
 constraintlayout = "2.1.4"
-preference = "1.2.1"
+playServicesAuth = "21.2.0"
+googleGmsServices = "4.4.2"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -23,9 +24,10 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 mpandroidchart = "com.github.PhilJay:MPAndroidChart:v3.1.0"
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+google-gms-services = { id = "com.google.gms.google-services", version.ref = "googleGmsServices" }

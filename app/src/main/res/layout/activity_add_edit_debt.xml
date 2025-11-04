@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Thêm Vay/Nợ"/>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <EditText
+                android:id="@+id/debtNameEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Tên khoản vay/nợ (VD: Vay tiền học)"
+                android:layout_marginBottom="16dp"
+                android:inputType="textCapSentences"/>
+
+            <EditText
+                android:id="@+id/debtAmountEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Số tiền"
+                android:inputType="numberDecimal"
+                android:layout_marginBottom="16dp"/>
+
+            <RadioGroup
+                android:id="@+id/debtTypeRadioGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <RadioButton
+                    android:id="@+id/radioBorrow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tôi đi vay"
+                    android:checked="true"/>
+
+                <RadioButton
+                    android:id="@+id/radioLend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tôi cho vay"
+                    android:layout_marginStart="16dp"/>
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/dueDateTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:gravity="center_vertical"
+                android:padding="8dp"
+                android:textSize="18sp"
+
+                android:background="@android:drawable/editbox_background_normal"
+                android:text="Chọn ngày đáo hạn (Tùy chọn)"
+                android:layout_marginBottom="16dp"/>
+
+            <CheckBox
+                android:id="@+id/paidCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="24dp"
+                android:text="Đã trả/Đã thu"
+                android:visibility="gone"
+                tools:visibility="visible"/>
+
+            <Button
+                android:id="@+id/saveDebtButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lưu"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
